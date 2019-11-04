@@ -41,6 +41,13 @@ resource "aws_security_group" "application" {
   }
 
   egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
     from_port       = 80
     to_port         = 80   
     protocol        = "${var.aws_security_group_protocol}"
@@ -161,6 +168,7 @@ resource "aws_instance" "ec2_instance" {
   instance_type             = "${var.instance_type}"
   disable_api_termination   = "${var.disable_api_termination}"
   availability_zone         = "${data.aws_availability_zones.available.names[1]}"
+  key_name                  = "${var.key_name}"
 
   ebs_block_device {
     device_name               = "${var.device_name}"
@@ -170,14 +178,24 @@ resource "aws_instance" "ec2_instance" {
   }
 
   tags = {
-    Name = "${var.ec2_name}"
+    Name = "EC2_for_web"
   }
 
   vpc_security_group_ids      = ["${aws_security_group.application.id}"]
   associate_public_ip_address = true
   source_dest_check           = false
   subnet_id                   = "${element(tolist(data.aws_subnet_ids.subnet.ids), 0)}"
-  depends_on                  = ["aws_db_instance.my_rds"]
+  depends_on                  = [aws_db_instance.my_rds,aws_s3_bucket.my_s3_bucket]
+  user_data                   = "${templatefile("${path.module}/module1/user_data.sh",
+                                      {
+                                        s3_bucket_name  = "${aws_s3_bucket.my_s3_bucket.id}",
+                                        aws_db_endpoint = "${aws_db_instance.my_rds.endpoint}",
+                                        aws_db_name     = "${aws_db_instance.my_rds.name}",
+                                        aws_db_username = "${aws_db_instance.my_rds.username}",
+                                        aws_db_password = "${aws_db_instance.my_rds.password}",
+                                        aws_region      = "${var.region}",
+                                        aws_profile     = "${var.profile}"  
+                                      })}"
 }
 
 resource "aws_dynamodb_table" "dynamoDB_Table" {
@@ -190,4 +208,37 @@ resource "aws_dynamodb_table" "dynamoDB_Table" {
     name = "${var.dynamoDB_hashKey}"
     type = "S"
   }
+}
+
+
+resource "aws_iam_policy" "s3Bucket-CRUD-Policy" {
+  name        = "s3Bucket-CRUD-Policy"
+  description = "A Upload policy"
+  depends_on = ["aws_s3_bucket.my_s3_bucket"]
+  policy = <<EOF
+{
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowGetPutDeleteActionsOnS3Bucket",
+              "Effect": "Allow",
+              "Action": ["s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject",
+                "s3:GetBucketAcl",
+                "s3:GetObjectAcl",
+                "s3:GetObjectVersionAcl",
+                "s3:ListAllMyBuckets",
+                "s3:ListBucket"],
+              "Resource": ["${aws_s3_bucket.my_s3_bucket.arn}","${aws_s3_bucket.my_s3_bucket.arn}/*"]
+            }
+          ]
+        }
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "CodeDeployEC2ServiceRole_s3Bucket_CRUD_policy_attach" {
+  role       = "CodeDeployEC2ServiceRole"
+  # depends_on = ["aws_iam_role.CodeDeployEC2ServiceRole"]
+  policy_arn = "${aws_iam_policy.s3Bucket-CRUD-Policy.arn}"
 }

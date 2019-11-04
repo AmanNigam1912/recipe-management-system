@@ -7,11 +7,11 @@ module "module1" {
    # subnetName = "${var.subnetName}"
    # internetGatewayName = "${var.internetGatewayName}"
    # routeTableName = "${var.routeTableName}"
-   # region = "${var.region}"
+   region = "${var.region}"
    # subnetCount = "${var.subnetCount}"
    subnetZones = "${var.subnetZones}"
    vpc_id = "${var.vpc_id}"
-   # profile = "${var.profile}"
+   profile = "${var.profile}"
    SGDatabase = "${var.SGDatabase}"
    SGApplication = "${var.SGApplication}"
    rds_subnet_group_name = "${var.rds_subnet_group_name}"
@@ -47,11 +47,34 @@ module "module1" {
    volume_type = "${var.volume_type}"
    delete_on_termination = "${var.delete_on_termination}"
    device_name = "${var.device_name}"
+   key_name = "${var.key_name}"
 
    dynamoDB_name = "${var.dynamoDB_name}"
    dynamoDB_hashKey = "${var.dynamoDB_hashKey}"
    dynamoDB_writeCapacity = "${var.dynamoDB_writeCapacity}"
    dynamoDB_readCapacity = "${var.dynamoDB_readCapacity}"
+
+   # name_ami_role_policy = "${var.name_ami_role_policy}"
+   # iam_username = "${var.iam_username}"
+   # iam_policy_name = "${var.iam_policy_name}"
+   # iam_policy_description = "${var.iam_policy_description}"
+   # CodeDeploy_EC2_S3_policy_name = "${var.CodeDeploy_EC2_S3_policy_name}"
+   # CodeDeploy_EC2_S3_policy_description = "${var.CodeDeploy_EC2_S3_policy_description}"
+   # CircleCI_Upload_To_S3_policy_name = "${var.CircleCI_Upload_To_S3_policy_name}"
+   # CircleCI_Upload_To_S3_policy_description = "${var.CircleCI_Upload_To_S3_policy_description}"
+   # account_id = "${var.account_id}"
+   # code_deploy_application_name = "${var.code_deploy_application_name}"
+   # compute_platform = "${var.compute_platform}"
+   # application_name = "${var.application_name}"
+   # codedeploy_bucket_name = "${var.codedeploy_bucket_name}"
+
+   s3_bucket_codedeploy = "${var.s3_bucket_codedeploy}"
+   s3_bucket_name_codedeploy = "${var.s3_bucket_name_codedeploy}"
+   s3_lifecycle_id_codedeploy = "${var.s3_lifecycle_id_codedeploy}"
+   s3_lifecycle_transition_days_codedeploy = "${var.s3_lifecycle_transition_days_codedeploy}"
+
+   # CircleCI_Code_Deploy_policy_name = "${var.CircleCI_Code_Deploy_policy_name}"
+   # CircleCI_Code_Deploy_policy_description = "${var.CircleCI_Code_Deploy_policy_description}"
 }
 
 # module "networking" {
