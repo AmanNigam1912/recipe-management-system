@@ -245,30 +245,30 @@ public class ImageController {
                             existRecipe.get().setImage(null);
                             imageService.deleteImageById(image.getImageId());
                             this.amazonClient.deleteFileFromS3Bucket(fileUrl);
-                            System.out.println("doneeeeeeeeeeeeeee");
-                            System.out.println(image.getImageId());
-                            System.out.println(fileUrl);
-                            error = "{\"Msg\": \"Image Deleted Successfully\"}";
-                            jo = new JSONObject(error);
-                            return new ResponseEntity<Object>(jo.toString(), HttpStatus.OK);
+//                            System.out.println("doneeeeeeeeeeeeeee");
+//                            System.out.println(image.getImageId());
+//                            System.out.println(fileUrl);
+//                            error = "{\"Msg\": \"Image Deleted Successfully\"}";
+//                            jo = new JSONObject(error);
+                            return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
                         }
                         else{
-                            error = "{\"error\": \"Image doesn't match with recipe\"}";
-                            jo = new JSONObject(error);
-                            return new ResponseEntity<Object>(jo.toString(), HttpStatus.OK);
+//                            error = "{\"error\": \"Image doesn't match with recipe\"}";
+//                            jo = new JSONObject(error);
+                            return new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
 
                         }
                     }
                     else{
-                        error = "{\"error\": \"Image for recipe doesn't exist\"}";
-                        jo = new JSONObject(error);
-                        return new ResponseEntity<Object>(jo.toString(), HttpStatus.OK);
+//                        error = "{\"error\": \"Image for recipe doesn't exist\"}";
+//                        jo = new JSONObject(error);
+                        return new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
                     }
 
                 } else {
-                    error = "{\"error\": \"RecipeId not found\"}";
-                    jo = new JSONObject(error);
-                    return new ResponseEntity<Object>(jo.toString(), HttpStatus.NOT_FOUND);
+//                    error = "{\"error\": \"RecipeId not found\"}";
+//                    jo = new JSONObject(error);
+                    return new ResponseEntity<Object>(HttpStatus.NOT_FOUND);
                 }
                 //return new ResponseEntity<Object>(recipe,HttpStatus.CREATED);
             } else {
