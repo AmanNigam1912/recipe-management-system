@@ -176,6 +176,7 @@ resource "aws_instance" "ec2_instance" {
     device_name               = "${var.device_name}"
     volume_size               = "${var.volume_size}"
     volume_type               = "${var.volume_type}"
+    # delete_on_termination     = "${var.delete_on_termination}"
     delete_on_termination     = "${var.delete_on_termination}"
   }
 
