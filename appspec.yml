@@ -2,7 +2,8 @@
 # os: linux
 
 files:             
-  - source: ./webapp/Recipe_Management_System/target/Recipe_Management_System.war
+  - source: Recipe_Management_System.war
+    #/webapp/Recipe_Management_System/target/Recipe_Management_System.war
     # destination: /opt/tomcat/webapps
     destination: /usr/share/tomcat/webapps
 

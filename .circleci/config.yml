@@ -44,7 +44,10 @@ jobs:
             pwd
             ls -al
             mkdir codedeploy_artifact
-            zip -r csye6225-webapp-${CIRCLE_BUILD_NUM}.zip /webapp/Recipe_Management_System/target/Recipe_Management_System.war codedeploy/*.sh appspec.yml
+            cp /webapp/Recipe_Management_System/target/Recipe_Management_System.war .
+            pwd
+            ls -al
+            zip -r csye6225-webapp-${CIRCLE_BUILD_NUM}.zip *.war codedeploy/*.sh appspec.yml
             pwd
             ls -al
             mv csye6225-webapp-${CIRCLE_BUILD_NUM}.zip codedeploy_artifact/
