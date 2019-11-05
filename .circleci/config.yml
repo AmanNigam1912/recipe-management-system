@@ -32,6 +32,8 @@ jobs:
           name: Check War Path
           command: |
             pwd
+            cd webapp/Recipe_Management_System
+            pwd
             ls -al
             cd target
             pwd
