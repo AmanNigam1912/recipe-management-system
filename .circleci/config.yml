@@ -24,7 +24,7 @@ jobs:
             cd webapp/Recipe_Management_System
             pwd
             ls -al
-            mvn clean package
+            ./mvnw clean install
             pwd
             ls -al
             ls -al target/
