@@ -78,6 +78,7 @@
     </dependencies>
 
     <build>
+        <finalName>Recipe_Management_System</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
