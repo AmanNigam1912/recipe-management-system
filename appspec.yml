@@ -1,10 +1,8 @@
-# version: 0.0
-# os: linux
+version: 0.0
+os: linux
 
 files:             
   - source: Recipe_Management_System.war
-    #/webapp/Recipe_Management_System/target/Recipe_Management_System.war
-    # destination: /opt/tomcat/webapps
     destination: /usr/share/tomcat/webapps
 
 hooks:
