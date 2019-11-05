@@ -21,6 +21,11 @@ jobs:
           name: Build WAR
           command: |
             pwd
+            cd ..
+            pwd
+            cd ..
+            pwd
+            ls
             cd webapp/Recipe_Management_System
             pwd
             ls -al
