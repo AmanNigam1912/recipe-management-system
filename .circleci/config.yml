@@ -29,6 +29,14 @@ jobs:
             ls -al
             ls -al target/
       - run:
+          name: Check War Path
+          command: |
+            pwd
+            ls -al
+            cd target
+            pwd
+            ls -al    
+      - run:
           name: Build Deployment Artifact
           command: |
             mkdir codedeploy_artifact
