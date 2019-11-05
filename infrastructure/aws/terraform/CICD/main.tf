@@ -264,8 +264,6 @@ resource "aws_iam_role_policy_attachment" "CodeDeployServiceRole_policy_attach" 
 }
 
 
-
-
 # allow ec2 to download revisions from s3 bucket
 # resource "aws_iam_policy" "CodeDeploy-EC2-S3" {
 #   name        = "${var.CodeDeploy_EC2_S3_policy_name}"
