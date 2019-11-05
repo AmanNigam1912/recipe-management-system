@@ -1,5 +1,5 @@
 HELP.md
-target/
+### target/ ###
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
 !**/src/test/**
@@ -31,3 +31,11 @@ build/
 .vscode/
 
 application.yml
+
+classes/
+generated-sources/
+generated-test-sources/
+maven-archiver/
+maven-status/
+surefire-reports/
+test-classes/
