@@ -63,7 +63,7 @@ jobs:
             --profile default      
       - run:
           name: Copy Artifact to S3
-          command: aws s3 sync ./codedeploy_artifact s3://${S3_CODEDEPLOY_BUCKET} --profile default
+          command: aws s3 sync ./codedeploy_artifact s3://${S3_CODEDEPLOY_BUCKET} --profile=default
       - run:
           name: CodeDeploy API call
           command: |
