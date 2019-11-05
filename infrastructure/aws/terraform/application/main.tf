@@ -167,7 +167,7 @@ resource "aws_instance" "ec2_instance" {
   ami                       = "${var.ami}"
   instance_type             = "${var.instance_type}"
   disable_api_termination   = "${var.disable_api_termination}"
-  availability_zone         = "${data.aws_availability_zones.available.names[1]}"
+  availability_zone         = "${data.aws_availability_zones.available.names[2]}"
   key_name                  = "${var.key_name}"
 
   ebs_block_device {

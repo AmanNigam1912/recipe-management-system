@@ -19,25 +19,23 @@ import java.util.Date;
 public class AmazonClient {
     private AmazonS3 s3client;
 
-    @Value("${amazonProperties.endpointUrl}")
-    private String endpointUrl;
-    @Value("${amazonProperties.bucketName}")
+    //@Value("${amazonProperties.endpointUrl}")
+    private String endpointUrl="https://s3.us-east-1.amazonaws.com";
+    @Value("${s3_bucket_name}")
     private String bucketName;
-    @Value("${amazonProperties.accessKey}")
-    private String accessKey;
-    @Value("${amazonProperties.secretKey}")
-    private String secretKey;
-    @Value("{amazonProperties.region}")
+//    @Value("${amazonProperties.accessKey}")
+//    private String accessKey;
+//    @Value("${amazonProperties.secretKey}")
+//    private String secretKey;
+    @Value("${aws_region}")
     private String region;
 
     @PostConstruct
     private void initializeAmazon() {
         //System.out.println(this.accessKey);
         //System.out.println(this.secretKey);
-        BasicAWSCredentials creds = new BasicAWSCredentials(this.accessKey, this.secretKey);
-        s3client = AmazonS3Client.builder()
-                .withRegion("us-east-1")
-                .withCredentials(new AWSStaticCredentialsProvider(creds))
+        //BasicAWSCredentials creds = new BasicAWSCredentials();
+        s3client = AmazonS3Client.builder().withRegion("us-east-1").withForceGlobalBucketAccessEnabled(true)
                 .build();
     }
 
