@@ -20,7 +20,7 @@ jobs:
       - run:
           name: Build WAR
           command: |
-            cd webapp
+            cd webapp/Recipe_Management_System
             pwd
             ls -al
             mvn clean install
