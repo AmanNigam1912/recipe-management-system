@@ -242,3 +242,9 @@ resource "aws_iam_role_policy_attachment" "CodeDeployEC2ServiceRole_s3Bucket_CRU
   # depends_on = ["aws_iam_role.CodeDeployEC2ServiceRole"]
   policy_arn = "${aws_iam_policy.s3Bucket-CRUD-Policy.arn}"
 }
+
+
+
+
+
+
