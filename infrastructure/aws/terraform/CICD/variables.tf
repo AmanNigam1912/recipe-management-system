@@ -49,3 +49,7 @@ variable "CodeDeploy_EC2_S3_policy_name" {
 variable "CodeDeploy_EC2_S3_policy_description" {
     type = "string" 
 }
+
+variable "iam_instance_profile" {
+  type = "string" 
+}

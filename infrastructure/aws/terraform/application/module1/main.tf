@@ -72,7 +72,7 @@ module "module1" {
    s3_bucket_name_codedeploy = "${var.s3_bucket_name_codedeploy}"
    s3_lifecycle_id_codedeploy = "${var.s3_lifecycle_id_codedeploy}"
    s3_lifecycle_transition_days_codedeploy = "${var.s3_lifecycle_transition_days_codedeploy}"
-
+   iam_instance_profile = "${var.iam_instance_profile}"
    # CircleCI_Code_Deploy_policy_name = "${var.CircleCI_Code_Deploy_policy_name}"
    # CircleCI_Code_Deploy_policy_description = "${var.CircleCI_Code_Deploy_policy_description}"
 }

@@ -110,7 +110,7 @@ resource "aws_iam_user_policy_attachment" "attach-circleci-ec2-ami-user-policy" 
 # }
 
 data "aws_s3_bucket" "codedeploy_bucket" {
-  bucket = "codedeploy.mitkatwala.me"
+  bucket = "codedeploy.recipebyaman.me"
 }
 
 
@@ -128,7 +128,10 @@ resource "aws_iam_policy" "CircleCI-Upload-To-S3" {
           "Sid": "AllowGetPutDeleteActionsOnS3Bucket",
           "Effect": "Allow",
           "Action": ["s3:PutObject"],
-          "Resource": ["arn:aws:s3:::codedeploy.mitkatwala.me"]
+          "Resource": [
+            "arn:aws:s3:::codedeploy.recipebyaman.me",
+            "arn:aws:s3:::codedeploy.recipebyaman.me/*"  
+          ]
       }
   ]
 }
@@ -264,27 +267,27 @@ resource "aws_iam_role_policy_attachment" "CodeDeployServiceRole_policy_attach" 
 
 
 # allow ec2 to download revisions from s3 bucket
-resource "aws_iam_policy" "CodeDeploy-EC2-S3" {
-  name        = "${var.CodeDeploy_EC2_S3_policy_name}"
-  description = "${var.CodeDeploy_EC2_S3_policy_description}"
-  policy      = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Action": [
-                "s3:Get*",
-                "s3:List*"
-            ],
-            "Effect": "Allow",
-            "Resource": ["arn:aws:s3:::codedeploy.mitkatwala.me", "arn:aws:s3:::aws-codedeploy-us-east-2/*",
-              "arn:aws:s3:::aws-codedeploy-us-east-1/*"]
-        }
-    ]
-}
-  EOF
-}
-
+# resource "aws_iam_policy" "CodeDeploy-EC2-S3" {
+#   name        = "${var.CodeDeploy_EC2_S3_policy_name}"
+#   description = "${var.CodeDeploy_EC2_S3_policy_description}"
+#   policy      = <<EOF
+# {
+#     "Version": "2012-10-17",
+#     "Statement": [
+#         {
+#             "Action": [
+#                 "s3:Get*",
+#                 "s3:List*"
+#             ],
+#             "Effect": "Allow",
+#             "Resource": ["arn:aws:s3:::codedeploy.recipebyaman.me", 
+#                          "arn:aws:s3:::aws-codedeploy-us-east-2/*",
+#                          "arn:aws:s3:::aws-codedeploy-us-east-1/*"]
+#         }
+#     ]
+# }
+#   EOF
+# }
 
 
 resource "aws_iam_role" "CodeDeployEC2ServiceRole" {
@@ -310,14 +313,50 @@ resource "aws_iam_role" "CodeDeployEC2ServiceRole" {
     }
 }
 
-resource "aws_iam_role_policy_attachment" "CodeDeployEC2ServiceRole_policy_attach" {
-  role       = "${aws_iam_role.CodeDeployEC2ServiceRole.name}"
-  depends_on = ["aws_iam_role.CodeDeployEC2ServiceRole"]
-  policy_arn = "${aws_iam_policy.CodeDeploy-EC2-S3.arn}"
+resource "aws_iam_instance_profile" "test_profile" {
+  name = "test_profile"
+  role = "${aws_iam_role.CodeDeployEC2ServiceRole.name}"
 }
+
+
+resource "aws_iam_role_policy" "CodeDeploy-EC2-S3" {
+  name    = "${var.CodeDeploy_EC2_S3_policy_name}"
+  role    = "${aws_iam_role.CodeDeployEC2ServiceRole.id}"
+  policy      = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:Get*",
+                "s3:List*"
+            ],
+            "Effect": "Allow",
+            "Resource": ["arn:aws:s3:::codedeploy.recipebyaman.me", 
+                         "arn:aws:s3:::aws-codedeploy-us-east-2/*",
+                         "arn:aws:s3:::aws-codedeploy-us-east-1/*"]
+        }
+    ]
+}
+  EOF
+}
+
+
+
+# resource "aws_iam_role_policy_attachment" "CodeDeployEC2ServiceRole_policy_attach" {
+#   role       = "${aws_iam_role.CodeDeployEC2ServiceRole.name}"
+#   depends_on = ["aws_iam_role.CodeDeployEC2ServiceRole"]
+#   policy_arn = "${aws_iam_policy.CodeDeploy-EC2-S3.arn}"
+# }
 
 resource "aws_iam_role_policy_attachment" "CodeDeployEC2ServiceRole_CloudWatch_policy_attach" {
   role       = "${aws_iam_role.CodeDeployEC2ServiceRole.name}"
   depends_on = ["aws_iam_role.CodeDeployEC2ServiceRole"]
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+
+output "aws_instance_profile_role" {
+  # value = "${aws_iam_instance_profile.test_profile.name}"
+  value = "${var.iam_instance_profile}"
 }

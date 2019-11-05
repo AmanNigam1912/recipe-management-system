@@ -265,3 +265,7 @@ variable "s3_lifecycle_transition_days_codedeploy" {
 variable "profile" {
     description = "Enter the environment (dev/prod):"
 }
+
+variable "iam_instance_profile" {
+  type = "string" 
+}
