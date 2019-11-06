@@ -1,12 +1,16 @@
 package com.csye.recipe.controller;
 
+import com.csye.recipe.pojo.Image;
 import com.csye.recipe.pojo.Recipe;
 import com.csye.recipe.pojo.Steps;
 import com.csye.recipe.pojo.User;
 import com.csye.recipe.repository.RecipeRepository;
 import com.csye.recipe.repository.UserRepository;
+import com.csye.recipe.service.AmazonClient;
+import com.csye.recipe.service.ImageService;
 import com.csye.recipe.service.RecipeService;
 import com.csye.recipe.service.UserService;
+import com.timgroup.statsd.StatsDClient;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,11 +43,22 @@ public class RecipeController {
     @Autowired
     private RecipeService recipeService;
 
+    @Autowired
+    private StatsDClient statsDClient;
+
+    @Autowired
+    private AmazonClient amazonClient;
+
+    @Autowired
+    private ImageService imageService;
+
     private final static Logger logger = LoggerFactory.getLogger(RecipeController.class);
 
     @RequestMapping(value = "/v1/recipe", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> createRecipe(@RequestBody Recipe recipe, HttpServletRequest req, HttpServletResponse res){
+        statsDClient.incrementCounter("endpoint.v1.recipe.api.post");
+        long start = System.currentTimeMillis();
 
         String[] userCredentials;
         String userName;
@@ -170,6 +185,9 @@ public class RecipeController {
 
                 recipeDao.save(recipe);
                 logger.info("Recipe created with id: "+id);
+                long end = System.currentTimeMillis();
+                long calculate = (end - start)/1000;
+                statsDClient.recordExecutionTime("endpoint.v1.recipe.api.post", calculate);
                 return new ResponseEntity<Object>(recipe,HttpStatus.CREATED);
             }
             else {
@@ -190,6 +208,8 @@ public class RecipeController {
     @RequestMapping(value = "/v1/recipe/{id}", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> getRecipe(Recipe recipe, HttpServletRequest req, HttpServletResponse res,@PathVariable("id") UUID id){
+        statsDClient.incrementCounter("endpoint.v1.recipe.id.api.get");
+        long start = System.currentTimeMillis();
 
         JSONObject jo;
         String error;
@@ -201,6 +221,9 @@ public class RecipeController {
                 error = "{\"error\": \"RecipeId not found\"}";
                 logger.error("RecipeId not found!!");
                 jo = new JSONObject(error);
+                long end = System.currentTimeMillis();
+                long calculate = (end - start)/1000;
+                statsDClient.recordExecutionTime("endpoint.v1.recipe.id.api.get", calculate);
                 return new ResponseEntity<Object>(jo.toString(),HttpStatus.NOT_FOUND);
             }
         }
@@ -215,6 +238,8 @@ public class RecipeController {
     @RequestMapping(value="/v1/recipe/{id}", method=RequestMethod.PUT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> updateRecipe(@RequestBody Recipe recipe, @PathVariable("id") UUID id, HttpServletRequest req, HttpServletResponse res){
+        statsDClient.incrementCounter("endpoint.v1.recipe.id.api.put");
+        long start = System.currentTimeMillis();
 
         String userCredentials[];
         String userName;
@@ -292,6 +317,9 @@ public class RecipeController {
                     return new ResponseEntity<Object>(jo.toString(),HttpStatus.NOT_FOUND);
                 }
                 logger.info("Recipe updated successfully!!");
+                long end = System.currentTimeMillis();
+                long calculate = (end - start)/1000;
+                statsDClient.recordExecutionTime("endpoint.v1.recipe.id.api.put", calculate);
                 return new ResponseEntity<Object>(val.get(), HttpStatus.OK);
             }else {
                 error = "{\"error\": \"User unauthorized to update this recipe!!\"}";
@@ -312,10 +340,14 @@ public class RecipeController {
     @RequestMapping(value="/v1/recipe/{id}", method=RequestMethod.DELETE, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> deleteRecipe(@PathVariable("id") UUID id, HttpServletRequest req, HttpServletResponse res){
+        statsDClient.incrementCounter("endpoint.v1.recipe.id.api.delete");
+        long start = System.currentTimeMillis();
+
         String userCredentials[];
         String userName;
         String password;
         String userHeader;
+        Image recipeImage;
         JSONObject jo;
         String error;
         try {
@@ -332,8 +364,18 @@ public class RecipeController {
             if(user != null && BCrypt.checkpw(password, user.getPassword())) {
                 if (val.isPresent()) {
                     if (user.getUserId().toString().equals(val.get().getAuthorId().toString())) {
+                        Optional<Recipe> existRecipe = recipeService.findById(id);
+                        recipeImage = existRecipe.get().getImage();
+                        if(recipeImage!=null){
+                            existRecipe.get().setImage(null);
+                            imageService.deleteImageById(recipeImage.getImageId());
+                            this.amazonClient.deleteFileFromS3Bucket(recipeImage.getImageURL());
+                        }
                         recipeService.deleteRecipeById(id);
                         logger.info("Recipe deleted successfully!!");
+                        long end = System.currentTimeMillis();
+                        long calculate = (end - start)/1000;
+                        statsDClient.recordExecutionTime("endpoint.v1.recipe.id.api.delete", calculate);
                         return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
                     } else {
                         error = "{\"error\": \"User Unauthorized to delete this recipe!!\"}";

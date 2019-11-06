@@ -2,8 +2,10 @@ package com.csye.recipe.controller;
 
 import com.csye.recipe.pojo.User;
 import com.csye.recipe.repository.UserRepository;
+import com.csye.recipe.service.MetricsClient;
 import com.csye.recipe.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.timgroup.statsd.StatsDClient;
 import org.json.JSONObject;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -30,6 +32,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private StatsDClient statsDClient;
+
 //    @Autowired
 //    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
@@ -40,6 +45,8 @@ public class UserController {
     @RequestMapping(value = "/v1/user/self", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> userHome(HttpServletRequest req, HttpServletResponse res) throws JsonProcessingException {
+        statsDClient.incrementCounter("endpoint.v1.user.self.api.get");
+        long start = System.currentTimeMillis();
 
         String[] userCredentials;
         String userName;
@@ -87,6 +94,9 @@ public class UserController {
                 return new ResponseEntity<Object>(jo.toString(),HttpStatus.UNAUTHORIZED);
             }
             logger.info("User details found!!");
+            long end = System.currentTimeMillis();
+            long calculate = (end - start)/1000;
+            statsDClient.recordExecutionTime("endpoint.v1.user.self.api.get", calculate);
             return new ResponseEntity<Object>(userDetails, HttpStatus.OK);
         }
         catch(Exception e){
@@ -101,7 +111,8 @@ public class UserController {
     @RequestMapping(value = "/v1/user", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> createUser(@RequestBody User user, HttpServletRequest req, HttpServletResponse res){
-
+        statsDClient.incrementCounter("endpoint.v1.user.api.post");
+        long start = System.currentTimeMillis();
         JSONObject jo;
         String error;
         //if user already exist
@@ -160,13 +171,17 @@ public class UserController {
         userDetails.put("accountUpdated",user.getAccountUpdated().toString());
 
         logger.info("User created successfully!!");
+        long end = System.currentTimeMillis();
+        long calculate = (end - start)/1000;
+        statsDClient.recordExecutionTime("endpoint.v1.user.api.post", calculate);
         return new ResponseEntity<Object>(userDetails,HttpStatus.CREATED);
     }
 
     @RequestMapping(value="/v1/user/self", method=RequestMethod.PUT,produces="application/json")
     @ResponseBody
     public ResponseEntity<Object> updateUser(@RequestBody User user,HttpServletRequest req,HttpServletResponse res){
-
+        statsDClient.incrementCounter("endpoint.v1.user.self.api.put");
+        long start = System.currentTimeMillis();
         JSONObject jo;
         String error;
         //checking if user sent no data to update
@@ -245,6 +260,9 @@ public class UserController {
             }
 
             logger.info("User contents updated successfully!!");
+            long end = System.currentTimeMillis();
+            long calculate = (end - start)/1000;
+            statsDClient.recordExecutionTime("endpoint.v1.user.api.put", calculate);
             return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
         }
         catch(Exception e){

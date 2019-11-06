@@ -12,6 +12,7 @@ import com.csye.recipe.service.AmazonClient;
 import com.csye.recipe.service.ImageService;
 import com.csye.recipe.service.RecipeService;
 import com.csye.recipe.service.UserService;
+import com.timgroup.statsd.StatsDClient;
 import org.json.JSONObject;
 //import com.timgroup.statsd.StatsDClient;
 import org.slf4j.Logger;
@@ -54,6 +55,9 @@ public class ImageController {
     @Autowired
     private RecipeRepository recipeRepository;
 
+    @Autowired
+    private StatsDClient statsDClient;
+
     private final static Logger logger = LoggerFactory.getLogger(ImageController.class);
 
     public ImageController(AmazonClient amazonClient) {
@@ -63,6 +67,9 @@ public class ImageController {
     @RequestMapping(value = "/v1/recipe/{id}/image", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> uploadImage(@RequestPart(value = "file") MultipartFile file, HttpServletRequest req, HttpServletResponse res,@PathVariable("id") UUID id) {
+        statsDClient.incrementCounter("endpoint.v1.recipe.id.image.api.post");
+        long start = System.currentTimeMillis();
+
         String[] userCredentials;
         String userName;
         String password;
@@ -145,6 +152,9 @@ public class ImageController {
                         imageDetails.put("Image ID",img.getImageId().toString());
                         imageDetails.put("Image URL",img.getImageURL());
                         logger.info("Image creation successful. ID and URL generated!!");
+                        long end = System.currentTimeMillis();
+                        long calculate = (end - start)/1000;
+                        statsDClient.recordExecutionTime("endpoint.v1.recipe.id.image.api.post", calculate);
                         return new ResponseEntity<Object>(imageDetails, HttpStatus.CREATED);
                     }
                     else{
@@ -181,6 +191,9 @@ public class ImageController {
     @ResponseBody
     public ResponseEntity<Object> getImage(HttpServletRequest req, HttpServletResponse res,@PathVariable("recipeId") UUID recipeId,@PathVariable("imageId") UUID imageId) {
         //return this.amazonClient.uploadFile(file);
+        statsDClient.incrementCounter("endpoint.v1.recipe.recipeId.image.imageId.api.get");
+        long start = System.currentTimeMillis();
+
         JSONObject jo;
         String error;
         try {
@@ -191,7 +204,10 @@ public class ImageController {
                     HashMap<String,String> imageDetails = new HashMap<>();
                     imageDetails.put("Image ID",image.get().getImageId().toString());
                     imageDetails.put("Image URL",image.get().getImageURL());
-                    logger.info("Image creation successful. ID and URL generated!!");
+                    logger.info("Image found!!");
+                    long end = System.currentTimeMillis();
+                    long calculate = (end - start)/1000;
+                    statsDClient.recordExecutionTime("endpoint.v1.recipe.recipeId.image.imageId.api.get", calculate);
                     return new ResponseEntity<Object>(imageDetails, HttpStatus.OK);
                 }
                 else{
@@ -220,6 +236,8 @@ public class ImageController {
     @ResponseBody
     public ResponseEntity<Object> deleteImage(HttpServletRequest req, HttpServletResponse res,
                                               @PathVariable("recipeId") UUID recipeId,@PathVariable("imageId") UUID imageId) {
+        statsDClient.incrementCounter("endpoint.v1.recipe.recipeId.image.imageId.api.delete");
+        long start = System.currentTimeMillis();
 
         String[] userCredentials;
         String userName;
@@ -270,7 +288,10 @@ public class ImageController {
 //                            System.out.println(fileUrl);
 //                            error = "{\"Msg\": \"Image Deleted Successfully\"}";
 //                            jo = new JSONObject(error);
-                            logger.info("Image deletion successful");
+                            logger.info("Image deleted successfully");
+                            long end = System.currentTimeMillis();
+                            long calculate = (end - start)/1000;
+                            statsDClient.recordExecutionTime("endpoint.v1.recipe.recipeId.image.imageId.api.delete", calculate);
                             return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
                         }
                         else{
@@ -314,10 +335,16 @@ public class ImageController {
     @ResponseBody
     public ResponseEntity<Object> recentRecipe(HttpServletRequest req, HttpServletResponse res) {
 
+        statsDClient.incrementCounter("endpoint.v1.recipes.api.get");
+        long start = System.currentTimeMillis();
+
         List<Recipe> r_list= recipeRepository.findByOrderByCreatedTs();
         Recipe r= r_list.get(r_list.size()-1);
-        logger.info("Image creation successful!!");
-        return new ResponseEntity<Object>(r, HttpStatus.CREATED);
+        logger.info("Recipe found!!");
+        long end = System.currentTimeMillis();
+        long calculate = (end - start)/1000;
+        statsDClient.recordExecutionTime("endpoint.v1.recipes.api.get", calculate);
+        return new ResponseEntity<Object>(r, HttpStatus.OK);
     }
 
 }
