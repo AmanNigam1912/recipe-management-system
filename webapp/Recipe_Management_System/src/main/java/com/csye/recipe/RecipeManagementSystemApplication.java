@@ -2,13 +2,11 @@ package com.csye.recipe;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
-public class RecipeManagementSystemApplication extends SpringBootServletInitializer {
+public class RecipeManagementSystemApplication {
 
     public static void main(String[] args) {
-
         SpringApplication.run(RecipeManagementSystemApplication.class, args);
     }
 
