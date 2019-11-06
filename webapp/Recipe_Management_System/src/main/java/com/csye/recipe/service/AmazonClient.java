@@ -21,14 +21,15 @@ public class AmazonClient {
 
     //@Value("${amazonProperties.endpointUrl}")
     private String endpointUrl="https://s3.us-east-1.amazonaws.com";
-    @Value("${s3_bucket_name}")
-    private String bucketName;
+    //@Value("${s3_bucket_name}")
+    //@Value(${bucket})
+    private String bucketName = System.getProperties().getProperty("bucket");
 //    @Value("${amazonProperties.accessKey}")
 //    private String accessKey;
 //    @Value("${amazonProperties.secretKey}")
 //    private String secretKey;
-    @Value("${aws_region}")
-    private String region;
+    //@Value("${aws_region}")
+    private String region = "us-east-1";
 
     @PostConstruct
     private void initializeAmazon() {
