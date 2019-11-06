@@ -11,4 +11,6 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
     -c file:/opt/aws/amazon-cloudwatch-agent/cloudwatch-config.json \
     -s
 
-sudo systemctl start tomcat.service
+cd /usr/share/tomcat/bin
+./startup.sh
+#sudo systemctl start tomcat.service
