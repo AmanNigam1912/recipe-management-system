@@ -2,7 +2,7 @@ package com.csye.recipe.controller;
 
 import com.csye.recipe.pojo.User;
 import com.csye.recipe.repository.UserRepository;
-import com.csye.recipe.service.MetricsClient;
+//import com.csye.recipe.service.MetricsClient;
 import com.csye.recipe.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.timgroup.statsd.StatsDClient;
