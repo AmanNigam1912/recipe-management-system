@@ -67,7 +67,7 @@ public class ImageController {
     @RequestMapping(value = "/v1/recipe/{id}/image", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> uploadImage(@RequestPart(value = "file") MultipartFile file, HttpServletRequest req, HttpServletResponse res,@PathVariable("id") UUID id) {
-        statsDClient.incrementCounter("endpoint.v1.recipe.id.image.api.post");
+            statsDClient.incrementCounter("endpoint.v1.recipe.id.image.api.post");
         long start = System.currentTimeMillis();
 
         String[] userCredentials;
