@@ -110,7 +110,7 @@ resource "aws_iam_user_policy_attachment" "attach-circleci-ec2-ami-user-policy" 
 # }
 
 data "aws_s3_bucket" "codedeploy_bucket" {
-  bucket = "codedeploy.recipebyaman.me"
+  bucket = "${var.codeDeployBucket}"
 }
 
 
@@ -129,8 +129,8 @@ resource "aws_iam_policy" "CircleCI-Upload-To-S3" {
           "Effect": "Allow",
           "Action": ["s3:PutObject"],
           "Resource": [
-            "arn:aws:s3:::codedeploy.recipebyaman.me",
-            "arn:aws:s3:::codedeploy.recipebyaman.me/*"  
+            "arn:aws:s3:::${var.codeDeployBucket}",
+            "arn:aws:s3:::${var.codeDeployBucket}/*"  
           ]
       }
   ]
@@ -278,8 +278,8 @@ resource "aws_iam_policy" "CodeDeploy-EC2-S3" {
                 "s3:List*"
             ],
             "Effect": "Allow",
-            "Resource": ["arn:aws:s3:::codedeploy.recipebyaman.me", 
-                          "arn:aws:s3:::codedeploy.recipebyaman.me/*", 
+            "Resource": ["arn:aws:s3:::${var.codeDeployBucket}", 
+                          "arn:aws:s3:::${var.codeDeployBucket}/*", 
                          "arn:aws:s3:::aws-codedeploy-us-east-2/*",
                          "arn:aws:s3:::aws-codedeploy-us-east-1/*"]
         }
@@ -331,8 +331,8 @@ resource "aws_iam_instance_profile" "test_profile" {
 #                 "s3:List*"
 #             ],
 #             "Effect": "Allow",
-#             "Resource": ["arn:aws:s3:::codedeploy.recipebyaman.me", 
-#                           "arn:aws:s3:::codedeploy.recipebyaman.me/*",
+#             "Resource": ["arn:aws:s3:::"${var.codeDeployBucket}"", 
+#                           "arn:aws:s3:::"${var.codeDeployBucket}"/*",
 #                          "arn:aws:s3:::aws-codedeploy-us-east-2/*",
 #                          "arn:aws:s3:::aws-codedeploy-us-east-1/*"]
 #         }
