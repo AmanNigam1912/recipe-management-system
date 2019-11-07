@@ -72,12 +72,30 @@
             <version>1.11.656</version>
         </dependency>
 
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-tomcat</artifactId>-->
+        <!--            <scope>provided</scope>-->
+        <!--        </dependency>-->
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.timgroup/java-statsd-client -->
+        <dependency>
+            <groupId>com.timgroup</groupId>
+            <artifactId>java-statsd-client</artifactId>
+            <version>3.1.0</version>
+        </dependency>
 
 
     </dependencies>
 
     <build>
+        <finalName>Recipe_Management_System</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

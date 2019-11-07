@@ -2,8 +2,10 @@ package com.csye.recipe.controller;
 
 import com.csye.recipe.pojo.User;
 import com.csye.recipe.repository.UserRepository;
+//import com.csye.recipe.service.MetricsClient;
 import com.csye.recipe.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.timgroup.statsd.StatsDClient;
 import org.json.JSONObject;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -12,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,14 +32,21 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private StatsDClient statsDClient;
+
 //    @Autowired
 //    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     String userHeader;
 
+    private final static Logger logger = LoggerFactory.getLogger(UserController.class);
+
     @RequestMapping(value = "/v1/user/self", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> userHome(HttpServletRequest req, HttpServletResponse res) throws JsonProcessingException {
+        statsDClient.incrementCounter("endpoint.v1.user.self.api.get");
+        long start = System.currentTimeMillis();
 
         String[] userCredentials;
         String userName;
@@ -48,6 +59,7 @@ public class UserController {
             //user sending no userName and password
             if(userHeader.endsWith("Og==")) {
                 error = "{\"error\": \"No Credentials sent\"}";
+                logger.error("No Credentials sent due to bad request");
                 jo = new JSONObject(error);
                 return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
             }
@@ -55,6 +67,7 @@ public class UserController {
                 userCredentials = userService.getUserCredentials(userHeader);
             } else {
                 error = "{\"error\": \"No Credentials sent\"}";
+                logger.error("No Credentials sent!! Authentication not valid!!");
                 jo = new JSONObject(error);
                 return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
             }
@@ -76,13 +89,19 @@ public class UserController {
             }
             else{
                 error = "{\"error\": \"User unauthorized\"}";
+                logger.error("User unauthorized!!");
                 jo = new JSONObject(error);
                 return new ResponseEntity<Object>(jo.toString(),HttpStatus.UNAUTHORIZED);
             }
+            logger.info("User details found!!");
+            long end = System.currentTimeMillis();
+            long calculate = (end - start)/1000;
+            statsDClient.recordExecutionTime("endpoint.v1.user.self.api.get", calculate);
             return new ResponseEntity<Object>(userDetails, HttpStatus.OK);
         }
         catch(Exception e){
             error = "{\"error\": \"Please provide authorization as basic auth\"}";
+            logger.error("Please provide authorization as basic auth!!");
             jo = new JSONObject(error);
             return new ResponseEntity<Object>(jo.toString(),HttpStatus.UNAUTHORIZED);
         }
@@ -92,13 +111,15 @@ public class UserController {
     @RequestMapping(value = "/v1/user", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> createUser(@RequestBody User user, HttpServletRequest req, HttpServletResponse res){
-
+        statsDClient.incrementCounter("endpoint.v1.user.api.post");
+        long start = System.currentTimeMillis();
         JSONObject jo;
         String error;
         //if user already exist
         User existUser = userDao.findByEmailId(user.getEmailId());
         if(existUser!=null){
             error = "{\"error\": \"User already exists\"}";
+            logger.error("User already exists!!");
             jo = new JSONObject(error);
             return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
         }
@@ -107,6 +128,7 @@ public class UserController {
         if(user.getPassword()==null || user.getFirstName()==null || user.getLastName()==null ||
             user.getEmailId()==null) {
             error = "{\"error\": \"FirstName or LastName or EmailId or Password cannot be null\"}";
+            logger.error("FirstName or LastName or EmailId or Password cannot be null!!");
             jo = new JSONObject(error);
             return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
         }
@@ -116,12 +138,14 @@ public class UserController {
 
         if(!EmailValidator.getInstance().isValid(user.getEmailId())){
             error = "{\"error\": \"Please enter valid EmailId\"}";
+            logger.error("Please enter valid EmailId!!");
             jo = new JSONObject(error);
             return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
         }
 
         if(!userService.isValidPassword(user.getPassword())){
             error = "{\"error\": \"FirstName or LastName or EmailId or Password cannot be null\"}";
+            logger.error("FirstName or LastName or EmailId or Password cannot be null!!");
             jo = new JSONObject(error);
             return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
         }
@@ -146,18 +170,24 @@ public class UserController {
         userDetails.put("accountCreated",user.getAccountCreated().toString());
         userDetails.put("accountUpdated",user.getAccountUpdated().toString());
 
+        logger.info("User created successfully!!");
+        long end = System.currentTimeMillis();
+        long calculate = (end - start)/1000;
+        statsDClient.recordExecutionTime("endpoint.v1.user.api.post", calculate);
         return new ResponseEntity<Object>(userDetails,HttpStatus.CREATED);
     }
 
     @RequestMapping(value="/v1/user/self", method=RequestMethod.PUT,produces="application/json")
     @ResponseBody
     public ResponseEntity<Object> updateUser(@RequestBody User user,HttpServletRequest req,HttpServletResponse res){
-
+        statsDClient.incrementCounter("endpoint.v1.user.self.api.put");
+        long start = System.currentTimeMillis();
         JSONObject jo;
         String error;
         //checking if user sent no data to update
         if(user.equals(null)){
             error = "{\"error\": \"Unable to find the user\"}";
+            logger.error("Unable to find the user!!");
             jo = new JSONObject(error);
             return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
         }
@@ -165,6 +195,7 @@ public class UserController {
         if(user.getEmailId()!=null || user.getUserId()!=null || user.getAccountCreated()!=null ||
             user.getAccountUpdated()!=null){
             error = "{\"error\": \"EmailId or UserId or AccountCreated or AccountUpdated cannot be updated\"}";
+            logger.error("EmailId or UserId or AccountCreated or AccountUpdated cannot be updated!!");
             jo = new JSONObject(error);
             return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
         }
@@ -182,6 +213,7 @@ public class UserController {
             //no credentials provided
             if(userHeader.endsWith("Og==")) {
                 error = "{\"error\": \"No Credentials sent\"}";
+                logger.error("No Credentials sent!!");
                 jo = new JSONObject(error);
                 return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
             }
@@ -190,6 +222,7 @@ public class UserController {
             }
             else {
                 error = "{\"error\": \"No Credentials sent\"}";
+                logger.error("No Credentials sent!!");
                 jo = new JSONObject(error);
                 return new ResponseEntity<Object>(jo.toString(),HttpStatus.BAD_REQUEST);
             }
@@ -221,14 +254,20 @@ public class UserController {
             }
             else{
                 error = "{\"error\": \"Incorrect password\"}";
+                logger.error("Incorrect password!!");
                 jo = new JSONObject(error);
                 return new ResponseEntity<Object>(jo.toString(), HttpStatus.UNAUTHORIZED);
             }
 
+            logger.info("User contents updated successfully!!");
+            long end = System.currentTimeMillis();
+            long calculate = (end - start)/1000;
+            statsDClient.recordExecutionTime("endpoint.v1.user.api.put", calculate);
             return new ResponseEntity<Object>(HttpStatus.NO_CONTENT);
         }
         catch(Exception e){
             error = "{\"error\": \"Please provide authorization as basic auth\"}";
+            logger.error("Please provide authorization as basic auth!!");
             jo = new JSONObject(error);
             return new ResponseEntity<Object>(jo.toString(),HttpStatus.UNAUTHORIZED);
         }

@@ -67,7 +67,14 @@ instance/
 docs/_build/
 
 # PyBuilder
-target/
+#target/
+classes/
+generated-sources/
+generated-test-sources/
+maven-archiver/
+maven-status/
+surefire-reports/
+test-classes/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -114,3 +121,6 @@ venv.bak/
 terraform.tfstate
 terraform.tfstate.backup
 terraform.tfvars
+.terraform.tfstate.lock.info
+
+.class
