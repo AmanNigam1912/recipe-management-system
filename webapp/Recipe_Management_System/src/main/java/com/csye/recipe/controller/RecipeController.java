@@ -54,7 +54,7 @@ public class RecipeController {
 
     private final static Logger logger = LoggerFactory.getLogger(RecipeController.class);
 
-    @RequestMapping(value = "/v1/recipe", method = RequestMethod.POST, produces = "application/json")
+    @RequestMapping(value = "/v2/recipe", method = RequestMethod.POST, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> createRecipe(@RequestBody Recipe recipe, HttpServletRequest req, HttpServletResponse res){
         statsDClient.incrementCounter("endpoint.v1.recipe.api.post");
@@ -205,7 +205,7 @@ public class RecipeController {
         }
     }
 
-    @RequestMapping(value = "/v1/recipe/{id}", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/v2/recipe/{id}", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> getRecipe(Recipe recipe, HttpServletRequest req, HttpServletResponse res,@PathVariable("id") UUID id){
         statsDClient.incrementCounter("endpoint.v1.recipe.id.api.get");
@@ -235,7 +235,7 @@ public class RecipeController {
         }
     }
 
-    @RequestMapping(value="/v1/recipe/{id}", method=RequestMethod.PUT, produces = "application/json")
+    @RequestMapping(value="/v2/recipe/{id}", method=RequestMethod.PUT, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> updateRecipe(@RequestBody Recipe recipe, @PathVariable("id") UUID id, HttpServletRequest req, HttpServletResponse res){
         statsDClient.incrementCounter("endpoint.v1.recipe.id.api.put");
@@ -337,7 +337,7 @@ public class RecipeController {
         }
     }
 
-    @RequestMapping(value="/v1/recipe/{id}", method=RequestMethod.DELETE, produces = "application/json")
+    @RequestMapping(value="/v2/recipe/{id}", method=RequestMethod.DELETE, produces = "application/json")
     @ResponseBody
     public ResponseEntity<Object> deleteRecipe(@PathVariable("id") UUID id, HttpServletRequest req, HttpServletResponse res){
         statsDClient.incrementCounter("endpoint.v1.recipe.id.api.delete");
