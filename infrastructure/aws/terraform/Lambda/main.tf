@@ -20,20 +20,21 @@ resource "aws_sns_topic_subscription" "lambda" {
 
 
 resource "aws_lambda_function" "func" {
-  filename      = "/home/aman/terraform/lambdaFunction.zip"
+  filename      = "/home/aman/terraform/Email-1.0-SNAPSHOT.jar"
   function_name = "lambda_called_from_sns"
   role          = "${aws_iam_role.lambda-sns-role.arn}"
 #   handler is the function lambda calls to begin executing my function
-  handler       = "handleRequest"
+  handler       = "Email::handleRequest"
   runtime       = "java8"
 #   amount of time Lambda Function has to run in seconds
-  timeout       = "900"
+  timeout       = 900
+  memory_size   = 256
 
-#   environment {
-#     variables = {
-#       foo = "bar"
-#     }
-#   }
+  environment {
+    variables = {
+      domain = "${var.domain}"
+    }
+  }
 }
 
 
@@ -71,6 +72,14 @@ resource "aws_iam_policy" "lambda_policy" {
                 "s3:List*"
             ],
             "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+              "ses:SendEmail",
+              "ses:SendRawEmail"
+            ],
             "Resource": "*"
         },
         {
@@ -123,20 +132,48 @@ resource "aws_iam_policy" "lambda_policy" {
   EOF
 }
 
-resource "aws_iam_role_policy_attachment" "CloudWatch_CodeDeployRole_policy_attach" {
+resource "aws_iam_role_policy_attachment" "lambda_policy_policy_attach" {
   role       = "${aws_iam_role.lambda-sns-role.name}"
 #   depends_on = ["aws_iam_role.lambda-sns-role"]
-  policy_arn = "${aws_iam_policy.CloudWatch-CodeDeploy.arn}"
+  policy_arn = "${aws_iam_policy.lambda_policy.arn}"
 }
 
+
+# resource "aws_security_group" "lc_sg" {
+#   name              = "lc_sg"
+#   description       = "Security Group for launch configuration"
+
+#   ingress {
+#     from_port       = 20 
+#     to_port         = 20   
+#     protocol        = "${var.aws_security_group_protocol}"
+#     cidr_blocks     = ["0.0.0.0/0"]
+#     #cidr_blocks values??
+#   }
+
+#   ingress {
+#     from_port       = 8080 
+#     to_port         = 8080  
+#     protocol        = "${var.aws_security_group_protocol}"
+#     cidr_blocks     = ["0.0.0.0/0"]
+#   }
+
+#   # egress {
+#   #   from_port       = 8080 
+#   #   to_port         = 8080  
+#   #   protocol        = "${var.aws_security_group_protocol}"
+#   #   cidr_blocks     = ["0.0.0.0/0"]
+#   # }
+
+# }
 
 # resource "aws_launch_configuration" "config_for_auto_scaling" {
 #   name                              = "asg_launch_config"
 # # AMI
-#   image_id                          = ""
+#   image_id                          = "${var.ami}"
 #   instance_type                     = "t2.nano"
 # #   YOUR_AWS_KEYNAME - Key Name that should be used for the instance
-#   key_name                          = ""  
+#   key_name                          = "${var.key_name}"  
 #   associate_public_ip_address       = "true"
 #   user_data                         = "${templatefile("${path.module}/module1/user_data.sh",
 #                                         {
@@ -150,16 +187,16 @@ resource "aws_iam_role_policy_attachment" "CloudWatch_CodeDeployRole_policy_atta
 #                                         })}"
 #   iam_instance_profile              = "${var.iam_instance_profile}"
 # #    	Updated web security group.
-#   security_groups                   = ""
+#   security_groups                   = "${aws_security_group.lc_sg.name}"
 # } 
 
 # resource "aws_autoscaling_group" "auto_scale" {
 #     name                            = "auto_scale"
 #     default_cooldown                = "60"
 #     launch_configuration            = "${aws_launch_configuration.config_for_auto_scaling.name}"
-#     min_size                        = 1
-#     max_size                        = 3
-#     desired_capacity                = 3    
+#     min_size                        = "1"
+#     max_size                        = "3"
+#     desired_capacity                = "3"    
 
 #     tags = [
 #     {
@@ -168,32 +205,35 @@ resource "aws_iam_role_policy_attachment" "CloudWatch_CodeDeployRole_policy_atta
 #       value               = "EC2_for_web"
 #     #   key                 = "Environment"
 #     #   value               = "dev"
-#       propagate_at_launch = true
+#       propagate_at_launch = "true"
 #     }
 #   ]
 # }
 
 # resource "aws_autoscaling_policy" "scale_up_policy" {
 #   name                   = "scale_up_policy"
-#   scaling_adjustment     = 1
+#   scaling_adjustment     = "1"
 #   adjustment_type        = "ChangeInCapacity"
-#   cooldown               = 60
+#   cooldown               = "60"
 #   autoscaling_group_name = "${aws_autoscaling_group.auto_scale.name}"    
 
 #   target_tracking_configuration {
-#   customized_metric_specification {
-#     metric_dimension {
-#       name  = "AutoScale_ScaleUpPolicy"
-#       value = "AutoScale_ScaleUpPolicy"
-#     }
+#   # customized_metric_specification {
+#   #   metric_dimension {
+#   #     name  = "AutoScale_ScaleUpPolicy"
+#   #     value = "AutoScale_ScaleUpPolicy"
+#   #   }
 
-#     metric_name = "CPUUtilization"
-#     namespace   = "AWS/EC2"
-#     statistic   = "Average"
-#     # unit        = 5
-#     }
-  
-#   target_value = 5
+#   #   metric_name = "CPUUtilization"
+#   #   namespace   = "AWS/EC2"
+#   #   statistic   = "Average"
+#   #   # unit        = 5
+#   #   }
+
+#   predefined_metric_specification {
+#     predefined_metric_type = "ASGAverageCPUUtilization"
+#   }  
+#   target_value = "5"
 #   }
 
 # }
@@ -202,22 +242,25 @@ resource "aws_iam_role_policy_attachment" "CloudWatch_CodeDeployRole_policy_atta
 #   name                   = "scale_down_policy"
 #   scaling_adjustment     = "-1"
 #   adjustment_type        = "ChangeInCapacity"
-#   cooldown               = 60
+#   cooldown               = "60"
 #   autoscaling_group_name = "${aws_autoscaling_group.auto_scale.name}"    
 
 #   target_tracking_configuration {
-#   customized_metric_specification {
-#     metric_dimension {
-#       name  = "AutoScale_ScaleDownPolicy"
-#       value = "AutoScale_ScaleDownPolicy"
-#     }
+#   # customized_metric_specification {
+#   #   metric_dimension {
+#   #     name  = "AutoScale_ScaleDownPolicy"
+#   #     value = "AutoScale_ScaleDownPolicy"
+#   #   }
 
-#     metric_name = "CPUUtilization"
-#     namespace   = "AWS/EC2"
-#     statistic   = "Average"
-#     # unit        = 3
-#     }
+#   #   metric_name = "CPUUtilization"
+#   #   namespace   = "AWS/EC2"
+#   #   statistic   = "Average"
+#   #   # unit        = 3
+#   #   }
   
+#   predefined_metric_specification {
+#     predefined_metric_type = "ASGAverageCPUUtilization"
+#   }  
 #   target_value = 3
 #   }
 

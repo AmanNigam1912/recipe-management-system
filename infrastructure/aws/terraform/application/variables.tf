@@ -225,9 +225,9 @@ variable "region" {
     type = "string"
 }
 
-# variable "account_id" {
-#     type = "string"
-# }
+variable "account_id" {
+    type = "string"
+}
 
 # variable "code_deploy_application_name" {
 #     type = "string"
@@ -268,4 +268,12 @@ variable "profile" {
 
 variable "iam_instance_profile" {
   type = "string" 
+}
+
+variable "domain" {
+    type = "string"
+}
+
+variable "lambda_role" {
+    type = "string"
 }
