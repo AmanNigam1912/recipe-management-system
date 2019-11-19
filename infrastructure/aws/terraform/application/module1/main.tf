@@ -62,10 +62,10 @@ module "module1" {
    # CodeDeploy_EC2_S3_policy_description = "${var.CodeDeploy_EC2_S3_policy_description}"
    # CircleCI_Upload_To_S3_policy_name = "${var.CircleCI_Upload_To_S3_policy_name}"
    # CircleCI_Upload_To_S3_policy_description = "${var.CircleCI_Upload_To_S3_policy_description}"
-   # account_id = "${var.account_id}"
+   account_id = "${var.account_id}"
    # code_deploy_application_name = "${var.code_deploy_application_name}"
    # compute_platform = "${var.compute_platform}"
-   # application_name = "${var.application_name}"
+   application_name = "${var.application_name}"
    # codedeploy_bucket_name = "${var.codedeploy_bucket_name}"
 
    s3_bucket_codedeploy = "${var.s3_bucket_codedeploy}"
@@ -75,6 +75,9 @@ module "module1" {
    iam_instance_profile = "${var.iam_instance_profile}"
    # CircleCI_Code_Deploy_policy_name = "${var.CircleCI_Code_Deploy_policy_name}"
    # CircleCI_Code_Deploy_policy_description = "${var.CircleCI_Code_Deploy_policy_description}"
+   domain = "${var.domain}"
+   lambda_role = "${var.lambda_role}"
+   timeToLive = "${var.timeToLive}"
 }
 
 # module "networking" {

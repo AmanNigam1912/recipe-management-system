@@ -1,6 +1,4 @@
 
-
-
 # resource "aws_iam_role_policy" "circleci-ec2-ami" {
 #   name = "${var.name_ami_role_policy}"
 
@@ -160,7 +158,7 @@ resource "aws_iam_policy" "CircleCI-Code-Deploy" {
         "codedeploy:GetApplicationRevision"
       ],
       "Resource": [
-        "arn:aws:codedeploy:${var.region}:${var.account_id}:application:${aws_codedeploy_app.csye6225-webapp.name}"
+        "arn:aws:codedeploy:${var.region}:${var.account_id}:application:${var.application_name}"
       ]
     },  
     {
@@ -196,40 +194,42 @@ resource "aws_iam_user_policy_attachment" "attach-circleci-CircleCI-Code-Deploy-
 }
 
 
-resource "aws_codedeploy_app" "csye6225-webapp" {
-  compute_platform = "Server"
-  name             = "${var.application_name}"
-}
+# resource "aws_codedeploy_app" "csye6225-webapp" {
+#   compute_platform = "Server"
+#   name             = "${var.application_name}"
+# }
 
-resource "aws_codedeploy_deployment_group" "csye6225-webapp-deployment" {
-  app_name              = "${aws_codedeploy_app.csye6225-webapp.name}"
-  deployment_group_name = "csye6225-webapp-deployment"
-  service_role_arn      = "${aws_iam_role.CodeDeployServiceRole.arn}"
-  deployment_config_name = "CodeDeployDefault.AllAtOnce"
+# resource "aws_codedeploy_deployment_group" "csye6225-webapp-deployment" {
+#   app_name              = "${aws_codedeploy_app.csye6225-webapp.name}"
+#   deployment_group_name = "csye6225-webapp-deployment"
+#   # service_role_arn      = "${aws_iam_role.CodeDeployServiceRole.arn}"
+#   service_role_arn      = "arn:aws:iam::${var.account_id}:role/CodeDeployServiceRole"
+#   deployment_config_name = "CodeDeployDefault.AllAtOnce"
 
-  deployment_style {
-    deployment_option = "WITHOUT_TRAFFIC_CONTROL"
-    deployment_type   = "IN_PLACE"
-  }
+#   deployment_style {
+#     deployment_option = "WITHOUT_TRAFFIC_CONTROL"
+#     deployment_type   = "IN_PLACE"
+#   }
 
-  ec2_tag_set {
-    ec2_tag_filter {
-      key   = "Name"
-      type  = "KEY_AND_VALUE"
-      value = "EC2_for_web"
-    }
-  }
+#   ec2_tag_set {
+#     ec2_tag_filter {
+#       key   = "Name"
+#       type  = "KEY_AND_VALUE"
+#       value = "EC2_for_web"
+#     }
+#   }
 
-  auto_rollback_configuration {
-    enabled = true
-    events  = ["DEPLOYMENT_FAILURE"]
-  }
+#   auto_rollback_configuration {
+#     enabled = true
+#     events  = ["DEPLOYMENT_FAILURE"]
+#   }
 
-  # load_balancer_info{
-  #   # yet to be completed
-  # }
+#   # autoscaling_groups = ["${aws_autoscaling_group.auto_scale.name}"]
+#   # load_balancer_info{
+#   #   # yet to be completed
+#   # }
 
-}
+# }     
 
 # # Roles that allow ec2 instances/other aws services to call other aws services on my behalf
 
@@ -356,7 +356,124 @@ resource "aws_iam_role_policy_attachment" "CodeDeployEC2ServiceRole_CloudWatch_p
 }
 
 
-output "aws_instance_profile_role" {
-  # value = "${aws_iam_instance_profile.test_profile.name}"
-  value = "${var.iam_instance_profile}"
+# output "aws_instance_profile_role" {
+#   # value = "${aws_iam_instance_profile.test_profile.name}"
+#   value = "${var.iam_instance_profile}"
+# }
+
+resource "aws_iam_role" "lambda-sns-role" {
+  name = "role_for_lambda_with_sns"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+
+resource "aws_iam_policy" "lambda_policy" {
+  name        = "lambda_policy"
+  description = "Policies required by lambda"
+  policy      = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:Get*",
+                "s3:List*"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+              "dynamodb:GetItem",
+              "dynamodb:GetRecords",
+              "dynamodb:DescribeTimeToLive",
+              "dynamodb:ListStreams",
+              "dynamodb:PutItem",
+              "dynamodb:Query",
+              "dynamodb:Scan",
+              "dynamodb:UpdateItem",
+              "dynamodb:UpdateTable",
+              "dynamodb:UpdateTimeToLive",
+              "dynamodb:DeleteItem"
+          ],
+          "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+              "ses:SendEmail",
+              "ses:SendRawEmail"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        },
+        {
+          "Sid": "LambdaDynamoDBAccess",
+          "Effect": "Allow",
+          "Action": [
+              "dynamodb:GetItem",
+              "dynamodb:PutItem",
+              "dynamodb:UpdateItem"
+          ],
+          "Resource": "*"  
+        },
+        {
+          "Sid": "LambdaSESAccess",
+          "Effect": "Allow",
+          "Action": [
+              "ses:VerifyEmailAddress",
+              "ses:SendEmail",
+              "ses:SendRawEmail"
+          ],
+          "Resource": "*"   
+        },
+        {
+          "Sid": "LambdaS3Access",
+          "Effect": "Allow",
+          "Action": [
+              "s3:GetObject"
+          ],
+          "Resource": "*"
+        },
+        {
+          "Sid": "LambdaSNSAccess",
+          "Effect": "Allow",
+          "Action": [
+              "sns:ConfirmSubscription"
+          ],
+          "Resource": "*"
+        }
+    ]
+}
+  EOF
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_policy_policy_attach" {
+  role       = "${aws_iam_role.lambda-sns-role.name}"
+#   depends_on = ["aws_iam_role.lambda-sns-role"]
+  policy_arn = "${aws_iam_policy.lambda_policy.arn}"
 }

@@ -15,3 +15,7 @@ sudo echo "JAVA_OPTS=\"\$JAVA_OPTS -Dbucket=${s3_bucket_name}"\" >> /usr/share/t
 sudo echo "JAVA_OPTS=\"\$JAVA_OPTS -DdbName=${aws_db_name}"\" >> /usr/share/tomcat/bin/setenv.sh
 sudo echo "JAVA_OPTS=\"\$JAVA_OPTS -Dusername=${aws_db_username}"\" >> /usr/share/tomcat/bin/setenv.sh
 sudo echo "JAVA_OPTS=\"\$JAVA_OPTS -Dpassword=${aws_db_password}"\" >> /usr/share/tomcat/bin/setenv.sh
+cd /usr/share/tomcat/bin
+./shutdown.sh
+./startup.sh
+sudo echo "tomcat restarted" >> /usr/share/tomcat/logs/csye6225.log

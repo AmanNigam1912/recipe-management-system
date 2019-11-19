@@ -13,4 +13,5 @@ public interface RecipeRepository extends CrudRepository<Recipe,UUID> {
 //    Optional<Recipe> findById(UUID id);
 
     List<Recipe> findByOrderByCreatedTs();
+    List<Recipe> findByAuthorId(UUID authorId);
 }

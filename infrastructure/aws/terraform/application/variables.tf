@@ -225,9 +225,9 @@ variable "region" {
     type = "string"
 }
 
-# variable "account_id" {
-#     type = "string"
-# }
+variable "account_id" {
+    type = "string"
+}
 
 # variable "code_deploy_application_name" {
 #     type = "string"
@@ -237,9 +237,9 @@ variable "region" {
 #    type = "string" 
 # }
 
-# variable "application_name" {
-#     type = "string"
-# }
+variable "application_name" {
+    type = "string"
+}
 
 variable "s3_bucket_codedeploy" {
     type = "string"
@@ -268,4 +268,16 @@ variable "profile" {
 
 variable "iam_instance_profile" {
   type = "string" 
+}
+
+variable "domain" {
+    type = "string"
+}
+
+variable "lambda_role" {
+    type = "string"
+}
+
+variable "timeToLive" {
+   type = "string"
 }

@@ -1,5 +1,8 @@
 package com.csye.recipe.controller;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.sns.AmazonSNSClient;
 import com.csye.recipe.pojo.Image;
 import com.csye.recipe.pojo.Recipe;
 import com.csye.recipe.pojo.Steps;
@@ -20,11 +23,16 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//import com.amazonaws.services.sns.AmazonSNSClient;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.amazonaws.services.sns.model.ListTopicsResult;
+import com.amazonaws.services.sns.model.PublishRequest;
+import com.amazonaws.services.sns.model.PublishResult;
+import com.amazonaws.services.sns.model.Topic;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 public class RecipeController {
@@ -404,4 +412,110 @@ public class RecipeController {
             return new ResponseEntity<Object>(jo.toString(),HttpStatus.UNAUTHORIZED);
         }
     }
+
+    @RequestMapping(value="/v1/myrecipes", method=RequestMethod.POST, produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<Object> getMyRecipes(HttpServletRequest req, HttpServletResponse res){
+
+        String snsTopic = "csye6225_lambda_topic";
+        //System.getProperties().getProperty("snsName");
+        String userCredentials[];
+        String userName;
+        String password;
+        String userHeader;
+        JSONObject jo;
+        String error;
+        List<Recipe> userRecipes;
+
+
+        try {
+            //to SNS publish message
+            AmazonSNSClient snsClient = (AmazonSNSClient) AmazonSNSClientBuilder.standard().withRegion("us-east-1").build();
+
+
+            Map<String, String> messageMap = new HashMap<String, String>();
+            //key for map. At 0 we will store user email address and 1 total num of recipes
+            int count = 2;
+            //authorizing the user
+            userHeader = req.getHeader("Authorization");
+
+            if (userHeader != null && userHeader.startsWith("Basic")) {
+                userCredentials = userService.getUserCredentials(userHeader);
+            } else {
+                error = "{\"error\": \"Please give Basic auth as authorization!!\"}";
+                //logger.error("Please give Basic auth as authorization!!");
+                jo = new JSONObject(error);
+                return new ResponseEntity<Object>(jo.toString(), HttpStatus.UNAUTHORIZED);
+            }
+
+            userName = userCredentials[0];
+            password = userCredentials[1];
+            User user = userDao.findByEmailId(userName);
+            //if user entered correct password
+            if (user != null && BCrypt.checkpw(password, user.getPassword())) {
+                userRecipes = new ArrayList<>();
+                userRecipes = recipeDao.findByAuthorId(user.getUserId());
+
+                //Processing message which needs to be published
+                PublishRequest publishRequest = new PublishRequest();
+                messageMap.put("default", "default subscribers");
+                //storing user email id
+                messageMap.put("0", user.getEmailId());
+                //storing recipe count for user
+                messageMap.put("1", String.valueOf(userRecipes.size()));
+                //store the recipe Id of every recipe of the user in a map & increment pointer
+                for (Recipe r : userRecipes) {
+                    messageMap.put(String.valueOf(count), r.getId().toString());
+                    count++;
+                }
+
+                //finding our topic in list of topics in AWS
+                ListTopicsResult topicsResult = snsClient.listTopics();
+                List<Topic> topicList = topicsResult.getTopics();
+                Topic ourTopic = null;
+                for (Topic topic : topicList) {
+                    if (topic.getTopicArn().contains(snsTopic)) {
+                        ourTopic = topic;
+                    }
+                }
+                if (ourTopic != null) {
+                    //publishRequest.setMessageStructure("json");
+                    //converting map to json object
+                    JSONObject msgToPublish = new JSONObject(messageMap);
+                    publishRequest.setTargetArn(ourTopic.getTopicArn());
+                    publishRequest.setMessage(msgToPublish.toString());
+                    //publishing message to our topic
+                    PublishResult pubResult = snsClient.publish(publishRequest);
+                    System.out.println("Message ID: " + pubResult.getMessageId());
+                } else {
+                    error = "{\"error\": \"Topic Not Found\"}";
+                    logger.error("Topic not found");
+                    jo = new JSONObject(error);
+                    return new ResponseEntity<Object>(jo.toString(), HttpStatus.NOT_FOUND);
+                    //System.out.println("Topic not Found");
+                }
+            }
+            else {
+                error = "{\"error\": \"User unauthorized to access recipes!!\"}";
+                logger.error("User unauthorized to access recipes!!");
+                jo = new JSONObject(error);
+                return new ResponseEntity<Object>(jo.toString(), HttpStatus.UNAUTHORIZED);
+            }
+        }
+        catch(Exception e){
+            error = "{\"error\": \"Please provide Basic auth as authorization!!\"}";
+            logger.error("Please provide Basic auth as authorization!!");
+            jo = new JSONObject(error);
+            return new ResponseEntity<Object>(jo.toString(),HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<Object>(HttpStatus.OK);
+    }
+
+
+    @RequestMapping(value = "/healthCheck", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    public ResponseEntity<Object> getHealthCheck(){
+        return new ResponseEntity<Object>(HttpStatus.OK);
+    }
+
 }
