@@ -158,7 +158,7 @@ resource "aws_iam_policy" "CircleCI-Code-Deploy" {
         "codedeploy:GetApplicationRevision"
       ],
       "Resource": [
-        "arn:aws:codedeploy:${var.region}:${var.account_id}:application:${aws_codedeploy_app.csye6225-webapp.name}"
+        "arn:aws:codedeploy:${var.region}:${var.account_id}:application:${var.application_name}"
       ]
     },  
     {
@@ -194,41 +194,42 @@ resource "aws_iam_user_policy_attachment" "attach-circleci-CircleCI-Code-Deploy-
 }
 
 
-resource "aws_codedeploy_app" "csye6225-webapp" {
-  compute_platform = "Server"
-  name             = "${var.application_name}"
-}
+# resource "aws_codedeploy_app" "csye6225-webapp" {
+#   compute_platform = "Server"
+#   name             = "${var.application_name}"
+# }
 
-resource "aws_codedeploy_deployment_group" "csye6225-webapp-deployment" {
-  app_name              = "${aws_codedeploy_app.csye6225-webapp.name}"
-  deployment_group_name = "csye6225-webapp-deployment"
-  service_role_arn      = "${aws_iam_role.CodeDeployServiceRole.arn}"
-  deployment_config_name = "CodeDeployDefault.AllAtOnce"
+# resource "aws_codedeploy_deployment_group" "csye6225-webapp-deployment" {
+#   app_name              = "${aws_codedeploy_app.csye6225-webapp.name}"
+#   deployment_group_name = "csye6225-webapp-deployment"
+#   # service_role_arn      = "${aws_iam_role.CodeDeployServiceRole.arn}"
+#   service_role_arn      = "arn:aws:iam::${var.account_id}:role/CodeDeployServiceRole"
+#   deployment_config_name = "CodeDeployDefault.AllAtOnce"
 
-  deployment_style {
-    deployment_option = "WITHOUT_TRAFFIC_CONTROL"
-    deployment_type   = "IN_PLACE"
-  }
+#   deployment_style {
+#     deployment_option = "WITHOUT_TRAFFIC_CONTROL"
+#     deployment_type   = "IN_PLACE"
+#   }
 
-  ec2_tag_set {
-    ec2_tag_filter {
-      key   = "Name"
-      type  = "KEY_AND_VALUE"
-      value = "EC2_for_web"
-    }
-  }
+#   ec2_tag_set {
+#     ec2_tag_filter {
+#       key   = "Name"
+#       type  = "KEY_AND_VALUE"
+#       value = "EC2_for_web"
+#     }
+#   }
 
-  auto_rollback_configuration {
-    enabled = true
-    events  = ["DEPLOYMENT_FAILURE"]
-  }
+#   auto_rollback_configuration {
+#     enabled = true
+#     events  = ["DEPLOYMENT_FAILURE"]
+#   }
 
-  # autoscaling_groups = ["${aws_autoscaling_group.auto_scale.name}"]
-  # load_balancer_info{
-  #   # yet to be completed
-  # }
+#   # autoscaling_groups = ["${aws_autoscaling_group.auto_scale.name}"]
+#   # load_balancer_info{
+#   #   # yet to be completed
+#   # }
 
-}     
+# }     
 
 # # Roles that allow ec2 instances/other aws services to call other aws services on my behalf
 

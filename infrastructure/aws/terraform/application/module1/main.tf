@@ -65,7 +65,7 @@ module "module1" {
    account_id = "${var.account_id}"
    # code_deploy_application_name = "${var.code_deploy_application_name}"
    # compute_platform = "${var.compute_platform}"
-   # application_name = "${var.application_name}"
+   application_name = "${var.application_name}"
    # codedeploy_bucket_name = "${var.codedeploy_bucket_name}"
 
    s3_bucket_codedeploy = "${var.s3_bucket_codedeploy}"
@@ -77,6 +77,7 @@ module "module1" {
    # CircleCI_Code_Deploy_policy_description = "${var.CircleCI_Code_Deploy_policy_description}"
    domain = "${var.domain}"
    lambda_role = "${var.lambda_role}"
+   timeToLive = "${var.timeToLive}"
 }
 
 # module "networking" {

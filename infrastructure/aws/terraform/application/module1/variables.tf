@@ -298,3 +298,7 @@ variable "domain" {
 variable "lambda_role" {
     type = "string"
 }
+
+variable "timeToLive" {
+   type = "string"
+}

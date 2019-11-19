@@ -237,9 +237,9 @@ variable "account_id" {
 #    type = "string" 
 # }
 
-# variable "application_name" {
-#     type = "string"
-# }
+variable "application_name" {
+    type = "string"
+}
 
 variable "s3_bucket_codedeploy" {
     type = "string"
@@ -276,4 +276,8 @@ variable "domain" {
 
 variable "lambda_role" {
     type = "string"
+}
+
+variable "timeToLive" {
+   type = "string"
 }
