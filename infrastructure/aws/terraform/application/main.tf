@@ -392,7 +392,7 @@ resource "aws_sns_topic_subscription" "lambda" {
 
 
 resource "aws_lambda_function" "func" {
-  filename      = "/home/aman/terraform/Email-1.0-SNAPSHOT.jar"
+  filename      = "/home/mit/Desktop/lambda/Email/target/Email-1.0-SNAPSHOT.jar"
   function_name = "lambda_called_from_sns"
   role          = "arn:aws:iam::${var.account_id}:role/${var.lambda_role}"
 #   handler is the function lambda calls to begin executing my function
@@ -693,7 +693,7 @@ resource "aws_lb" "application_lb" {
 
 
 data "aws_acm_certificate" "ssl_certificate" {
-  domain   = "dev.recipebyaman.me"
+  domain   = "dev.mitkatwala.me"
   statuses = ["ISSUED"]
 }
 
@@ -774,7 +774,7 @@ resource "aws_lb_listener" "http_listener" {
 
 
 data "aws_route53_zone" "selected" {
-  name         = "dev.recipebyaman.me"
+  name         = "dev.mitkatwala.me"
   private_zone = false
 }
 

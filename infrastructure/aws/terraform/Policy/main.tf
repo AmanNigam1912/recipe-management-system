@@ -1,4 +1,3 @@
-
 # resource "aws_iam_role_policy" "circleci-ec2-ami" {
 #   name = "${var.name_ami_role_policy}"
 
@@ -331,8 +330,8 @@ resource "aws_iam_instance_profile" "test_profile" {
 #                 "s3:List*"
 #             ],
 #             "Effect": "Allow",
-#             "Resource": ["arn:aws:s3:::"${var.codeDeployBucket}"", 
-#                           "arn:aws:s3:::"${var.codeDeployBucket}"/*",
+#             "Resource": ["arn:aws:s3:::${var.codeDeployBucket}, 
+#                           "arn:aws:s3:::${var.codeDeployBucket}/*",
 #                          "arn:aws:s3:::aws-codedeploy-us-east-2/*",
 #                          "arn:aws:s3:::aws-codedeploy-us-east-1/*"]
 #         }

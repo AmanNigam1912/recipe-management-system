@@ -2,6 +2,10 @@ package com.csye.recipe.controller;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.csye.recipe.pojo.Image;
 import com.csye.recipe.pojo.Recipe;
@@ -33,6 +37,8 @@ import com.amazonaws.services.sns.model.Topic;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+
+import static com.amazonaws.services.route53.model.ResettableElementName.Regions;
 
 @RestController
 public class RecipeController {
@@ -428,9 +434,15 @@ public class RecipeController {
         List<Recipe> userRecipes;
 
 
-        try {
+
             //to SNS publish message
-            AmazonSNSClient snsClient = (AmazonSNSClient) AmazonSNSClientBuilder.standard().withRegion("us-east-1").build();
+        InstanceProfileCredentialsProvider provider
+                = new InstanceProfileCredentialsProvider(true);
+            AmazonSNS snsClient = AmazonSNSAsyncClientBuilder.standard()
+                    .withRegion("us-east-1")
+                    .withCredentials(provider)
+                    .build();
+            //AmazonSNSClient snsClient = (AmazonSNSClient) AmazonSNSClientBuilder.standard().withRegion("us-east-1").build();
 
 
             Map<String, String> messageMap = new HashMap<String, String>();
@@ -501,13 +513,7 @@ public class RecipeController {
                 jo = new JSONObject(error);
                 return new ResponseEntity<Object>(jo.toString(), HttpStatus.UNAUTHORIZED);
             }
-        }
-        catch(Exception e){
-            error = "{\"error\": \"Please provide Basic auth as authorization!!\"}";
-            logger.error("Please provide Basic auth as authorization!!");
-            jo = new JSONObject(error);
-            return new ResponseEntity<Object>(jo.toString(),HttpStatus.UNAUTHORIZED);
-        }
+
         return new ResponseEntity<Object>(HttpStatus.OK);
     }
 
