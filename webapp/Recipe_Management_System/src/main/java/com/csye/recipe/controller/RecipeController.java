@@ -2,6 +2,9 @@ package com.csye.recipe.controller;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
 import com.amazonaws.services.sns.AmazonSNSClient;
 import com.csye.recipe.pojo.Image;
 import com.csye.recipe.pojo.Recipe;
@@ -430,7 +433,10 @@ public class RecipeController {
 
         try {
             //to SNS publish message
-            AmazonSNSClient snsClient = (AmazonSNSClient) AmazonSNSClientBuilder.standard().withRegion("us-east-1").build();
+//            AmazonSNSClient snsClient = (AmazonSNSClient) AmazonSNSClientBuilder.standard().withRegion("us-east-1").build();
+            AmazonSNS snsClient = AmazonSNSAsyncClientBuilder.standard()
+                    .withRegion(Regions.US_EAST_1)
+                    .build();
 
 
             Map<String, String> messageMap = new HashMap<String, String>();
