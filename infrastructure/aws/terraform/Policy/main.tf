@@ -1,3 +1,4 @@
+
 # resource "aws_iam_role_policy" "circleci-ec2-ami" {
 #   name = "${var.name_ami_role_policy}"
 
@@ -305,7 +306,7 @@ resource "aws_iam_role" "CodeDeployEC2ServiceRole" {
       }
     ]
 }
-  EOF
+EOF
     tags = {
       Name = "CodeDeployEC2ServiceRole"
     }
@@ -315,6 +316,27 @@ resource "aws_iam_instance_profile" "test_profile" {
   name = "test_profile"
   role = "${aws_iam_role.CodeDeployEC2ServiceRole.name}"
 }
+
+
+resource "aws_iam_policy" "policy7" {
+  name        = "SNS-policy"
+  description = "The policy for Amazon EC2 Role to enable AWS Systems Manager service core functionality"
+  policy      = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "sns:*"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ]
+}
+EOF
+}
+
 
 
 # resource "aws_iam_role_policy" "CodeDeploy-EC2-S3" {
@@ -330,8 +352,8 @@ resource "aws_iam_instance_profile" "test_profile" {
 #                 "s3:List*"
 #             ],
 #             "Effect": "Allow",
-#             "Resource": ["arn:aws:s3:::${var.codeDeployBucket}, 
-#                           "arn:aws:s3:::${var.codeDeployBucket}/*",
+#             "Resource": ["arn:aws:s3:::codedeploy.recipebyaman.me", 
+#                           "arn:aws:s3:::codedeploy.recipebyaman.me/*",
 #                          "arn:aws:s3:::aws-codedeploy-us-east-2/*",
 #                          "arn:aws:s3:::aws-codedeploy-us-east-1/*"]
 #         }
@@ -346,6 +368,12 @@ resource "aws_iam_role_policy_attachment" "CodeDeployEC2ServiceRole_policy_attac
   role       = "${aws_iam_role.CodeDeployEC2ServiceRole.name}"
   depends_on = ["aws_iam_role.CodeDeployEC2ServiceRole"]
   policy_arn = "${aws_iam_policy.CodeDeploy-EC2-S3.arn}"
+}
+
+resource "aws_iam_role_policy_attachment" "CodeDeployEC2ServiceRole_policy_attach_sns" {
+  role       = "${aws_iam_role.CodeDeployEC2ServiceRole.name}"
+  depends_on = ["aws_iam_role.CodeDeployEC2ServiceRole"]
+  policy_arn = "${aws_iam_policy.policy7.arn}"
 }
 
 resource "aws_iam_role_policy_attachment" "CodeDeployEC2ServiceRole_CloudWatch_policy_attach" {
