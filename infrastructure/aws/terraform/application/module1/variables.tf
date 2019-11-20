@@ -302,3 +302,7 @@ variable "lambda_role" {
 variable "timeToLive" {
    type = "string"
 }
+
+variable "lambdaPath" {
+    type = "string"
+}

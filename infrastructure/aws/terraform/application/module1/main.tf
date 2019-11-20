@@ -78,6 +78,7 @@ module "module1" {
    domain = "${var.domain}"
    lambda_role = "${var.lambda_role}"
    timeToLive = "${var.timeToLive}"
+   lambdaPath = "${var.lambdaPath}"
 }
 
 # module "networking" {
