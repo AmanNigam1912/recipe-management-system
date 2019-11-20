@@ -55,5 +55,5 @@ variable "iam_instance_profile" {
 }
 
 variable "codeDeployBucket" {
-  type = "string" 
+    type = "string"
 }

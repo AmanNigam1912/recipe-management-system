@@ -290,3 +290,19 @@ variable "codedeploy_bucket_name" {
 variable "iam_instance_profile" {
   type = "string" 
 }
+
+variable "domain" {
+    type = "string"
+}
+
+variable "lambda_role" {
+    type = "string"
+}
+
+variable "timeToLive" {
+   type = "string"
+}
+
+variable "lambdaPath" {
+    type = "string"
+}
